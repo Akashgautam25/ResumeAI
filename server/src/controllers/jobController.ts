@@ -49,7 +49,7 @@ export async function getJobDescriptions(req: AuthRequest, res: Response, next: 
       },
     });
 
-    const parsedJobs = jobs.map((j) => {
+    const parsedJobs = jobs.map((j: any) => {
       let parsedData = {};
       try {
         parsedData = JSON.parse(j.parsedData);
@@ -120,7 +120,7 @@ export async function getJobDescriptionById(req: AuthRequest, res: Response, nex
       parsedData = {};
     }
 
-    const matches = job.jobMatches.map((m) => ({
+    const matches = job.jobMatches.map((m: any) => ({
       id: m.id,
       resumeId: m.resumeId,
       resumeTitle: m.resume.title,

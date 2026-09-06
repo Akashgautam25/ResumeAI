@@ -198,7 +198,7 @@ export async function getResumes(req: AuthRequest, res: Response, next: NextFunc
       },
     });
 
-    const parsedResumes = resumes.map((r) => {
+    const parsedResumes = resumes.map((r: any) => {
       let structuredData = null;
       try {
         structuredData = JSON.parse(r.structuredData);

@@ -105,7 +105,7 @@ export async function getInterviewSessions(req: AuthRequest, res: Response, next
       },
     });
 
-    const parsedSessions = sessions.map((s) => {
+    const parsedSessions = sessions.map((s: any) => {
       let categoryScores = {};
       try {
         categoryScores = JSON.parse(s.categoryScores);

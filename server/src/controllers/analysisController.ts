@@ -157,7 +157,7 @@ export async function getAnalysisHistory(req: AuthRequest, res: Response, next: 
       take: 50,
     });
 
-    const parsedAnalyses = analyses.map((a) => {
+    const parsedAnalyses = analyses.map((a: any) => {
       let catScores = {};
       try {
         catScores = JSON.parse(a.categoryScores);

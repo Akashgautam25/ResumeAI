@@ -144,6 +144,8 @@ export interface DeterministicMetrics {
   readingTimeMin: number;
   actionVerbRatio: number;
   quantifiedBulletRatio: number;
+  actionVerbsCount?: number;
+  measurableMetricsCount?: number;
 }
 
 export interface ResumeAnalysis {
@@ -219,6 +221,7 @@ export interface TailoredDiffItem {
 export interface JobMatch {
   id: string;
   resumeId: string;
+  resumeTitle?: string;
   jobId: string;
   overallScore: number;
   skillMatchScore: number;

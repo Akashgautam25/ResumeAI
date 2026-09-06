@@ -142,11 +142,11 @@ export const ResumeAnalysisPage: React.FC = () => {
           <div className="mt-4 pt-4 border-t border-zinc-100 w-full grid grid-cols-2 gap-2 text-center text-xs">
             <div className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
               <span className="text-zinc-500 text-[10px]">Action Verbs</span>
-              <div className="font-bold text-zinc-900 mt-0.5">{deterministicMetrics?.actionVerbsCount || 0} verbs</div>
+              <div className="font-bold text-zinc-900 mt-0.5">{analysis.keywordAnalysis?.actionVerbsCount || deterministicMetrics?.actionVerbsCount || 0} verbs</div>
             </div>
             <div className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
               <span className="text-zinc-500 text-[10px]">Quantified Bullets</span>
-              <div className="font-bold text-zinc-900 mt-0.5">{deterministicMetrics?.measurableMetricsCount || 0} metrics</div>
+              <div className="font-bold text-zinc-900 mt-0.5">{analysis.keywordAnalysis?.measurableMetricsCount || deterministicMetrics?.measurableMetricsCount || 0} metrics</div>
             </div>
           </div>
         </Card>

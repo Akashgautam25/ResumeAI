@@ -62,7 +62,7 @@ export async function getVersionsByResumeId(req: AuthRequest, res: Response, nex
       orderBy: { versionNumber: 'desc' },
     });
 
-    const parsedVersions = versions.map((v) => ({
+    const parsedVersions = versions.map((v: any) => ({
       ...v,
       structuredData: JSON.parse(v.structuredData),
     }));
