@@ -1,0 +1,217 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  email             String            @unique
+  passwordHash      String
+  name              String
+  role              String            @default("USER") // USER, ADMIN
+  profilePicture    String?
+  targetRole        String?           @default("Software Engineer")
+  experienceLevel   String?           @default("Entry Level / Student")
+  preferredIndustry String?           @default("Technology")
+  linkedin          String?
+  github            String?
+  portfolio         String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  resumes           Resume[]
+  jobDescriptions   JobDescription[]
+  refreshTokens     RefreshToken[]
+  aiRequests        AIRequest[]
+  files             File[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Resume {
+  id                String            @id @default(cuid())
+  userId            String
+  title             String            @default("My Resume")
+  targetRole        String?           @default("Software Engineer")
+  templateId        String            @default("ats-classic") // ats-classic, modern, developer, minimal
+  rawText           String?
+  structuredData    String            // JSON: personal, summary, education, experience, projects, skills, certifications, achievements, leadership, etc.
+  atsScore          Int               @default(0)
+  completenessScore Int               @default(0)
+  isBase            Boolean           @default(true)
+  parentResumeId    String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses          ResumeAnalysis[]
+  versions          ResumeVersion[]
+  jobMatches        JobMatch[]
+  interviewSessions InterviewSession[]
+
+  @@index([userId])
+}
+
+model ResumeVersion {
+  id             String   @id @default(cuid())
+  resumeId       String
+  versionNumber  Int
+  title          String
+  templateId     String   @default("ats-classic")
+  structuredData String   // JSON snapshot
+  atsScore       Int      @default(0)
+  changeSummary  String?
+  createdAt      DateTime @default(now())
+
+  resume         Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+}
+
+model ResumeAnalysis {
+  id                   String   @id @default(cuid())
+  resumeId             String
+  atsScore             Int      @default(0)
+  categoryScores       String   // JSON: atsCompatibility, resumeStructure, skills, experience, projects, education, achievements, keywords, impact, formatting
+  strengths            String   // JSON array of { title, explanation, category }
+  weaknesses           String   // JSON array of { title, explanation, severity: Critical|High|Medium|Low, recommendation, category }
+  improvements         String   // JSON array of { section, originalText, suggestedText, reason }
+  keywordAnalysis      String   // JSON: totalKeywords, topKeywords, actionVerbsCount, measurableMetricsCount, missingKeywords
+  deterministicMetrics String   // JSON: bulletCount, avgBulletLength, contactCompleteness, wordCount, readingTimeMin, etc.
+  rawAiResponse        String?
+  createdAt            DateTime @default(now())
+
+  resume               Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+}
+
+model JobDescription {
+  id          String     @id @default(cuid())
+  userId      String
+  company     String
+  role        String
+  jobUrl      String?
+  rawText     String
+  parsedData  String     // JSON: requiredSkills, preferredSkills, technologies, responsibilities, keywords, minExperience, education
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobMatches  JobMatch[]
+  interviewSessions InterviewSession[]
+
+  @@index([userId])
+}
+
+model JobMatch {
+  id              String         @id @default(cuid())
+  resumeId        String
+  jobId           String
+  overallScore    Int            @default(0) // 0 - 100%
+  skillMatchScore Int            @default(0)
+  expMatchScore   Int            @default(0)
+  eduMatchScore   Int            @default(0)
+  keywordMatchScore Int          @default(0)
+  matchedSkills   String         // JSON array of string
+  partialSkills   String         // JSON array of string
+  missingSkills   String         // JSON array of string
+  recommendations String         // JSON array of { title, advice, priority }
+  tailoredDiffs   String?        // JSON array of { section, original, proposed, reason }
+  createdAt       DateTime       @default(now())
+
+  resume          Resume         @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job             JobDescription @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([jobId])
+}
+
+model InterviewSession {
+  id             String              @id @default(cuid())
+  resumeId       String
+  jobId          String?
+  readinessScore Int                 @default(75) // 0-100%
+  categoryScores String              // JSON: technical, projects, behavioral, communication
+  targetRole     String              @default("Software Engineer")
+  targetCompany  String?
+  createdAt      DateTime            @default(now())
+
+  resume         Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job            JobDescription?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  questions      InterviewQuestion[]
+
+  @@index([resumeId])
+  @@index([jobId])
+}
+
+model InterviewQuestion {
+  id                     String           @id @default(cuid())
+  sessionId              String
+  category               String           // Technical, Project, Behavioral, HR
+  question               String
+  difficulty             String           // Easy, Medium, Hard
+  whyItMatters           String
+  suggestedAnswerFramework String        // STAR framework or conceptual breakdown
+  sampleAnswer           String?
+  userNotes              String?
+  order                  Int              @default(0)
+  createdAt              DateTime         @default(now())
+
+  session                InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model AIRequest {
+  id               String   @id @default(cuid())
+  userId           String?
+  endpoint         String
+  model            String
+  promptTokens     Int?     @default(0)
+  completionTokens Int?     @default(0)
+  success          Boolean  @default(true)
+  latencyMs        Int?     @default(0)
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model File {
+  id              String   @id @default(cuid())
+  userId          String
+  fileName        String
+  fileType        String   // pdf, docx
+  fileSize        Int
+  filePath        String
+  storageProvider String   @default("local") // local, s3, cloudinary
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
